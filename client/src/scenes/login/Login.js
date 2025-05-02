@@ -27,13 +27,15 @@ const Login = () => {
     password: Yup.string().required("Password is required"),
   });
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values,{resetForm}) => {
     if(isLogin === 'login'){
         dispatch(userLogin(values))
+        resetForm();
     }
     else{
         dispatch(userRegister(values));
-        setIsLogin('login')
+        setIsLogin('login');
+        resetForm();
     }
   };
 

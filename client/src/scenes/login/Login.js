@@ -1,4 +1,4 @@
-// src/pages/Login.js
+//** IMPORTS */
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, useTheme } from "@mui/material";
 import { Formik } from "formik";
@@ -7,6 +7,21 @@ import { useDispatch, useSelector } from "react-redux";
 import bg from '../../assets/bg1.webp'
 import { userRegister, userLogin } from "../../features/userSlice";
 
+//** EXISTS */
+const getName = async (checkName) => {
+  const sendData = {
+    userName: checkName,
+  };
+  const response = await fetch("http://localhost:3001/find/user-name-exist", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(sendData),
+  });
+  const data = await response.json();
+  return data.value;
+};
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState("login");
@@ -21,11 +36,28 @@ const Login = () => {
     userName: "",
     password: "",
   };
-
-  const validationSchema = Yup.object().shape({
-    userName: Yup.string().required("Username is required"),
-    password: Yup.string().required("Password is required"),
-  });
+  let validationSchema;
+  
+  if (isLogin) {
+    validationSchema = Yup.object().shape({
+      userName: Yup.string().required("Username is required"),
+      password: Yup.string().required("Password is required"),
+    });
+  } else {
+    validationSchema = Yup.object().shape({
+      userName: Yup.string()
+        .required("Username is required")
+        .test(
+          "unique-userName",
+          "UserName already Exists!",
+          async (userName) => {
+            const data = await getName(userName);
+            return !data;
+          }
+        ),
+      password: Yup.string().required("Password is required"),
+    });
+  }
 
   const handleSubmit = (values,{resetForm}) => {
     if(isLogin === 'login'){
@@ -46,7 +78,6 @@ const Login = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        // background: "red",
         backgroundImage: `url(${bg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -55,15 +86,9 @@ const Login = () => {
     >
       <Box
         sx={{
-          //   display: "flex",
-          //   flexDirection: "column",
-          //   alignContent: "center",
-          //   justifyContent: "center",
-          //   maxWidth: "400px",
-          //   //   bgcolor: "blue",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center", // use alignItems for flex direction column
+          alignItems: "center",
           justifyContent: "center",
           maxWidth: "400px",
           maxHeight: "400px",
@@ -83,6 +108,7 @@ const Login = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
           {({
             values,
@@ -91,13 +117,18 @@ const Login = () => {
             handleChange,
             handleBlur,
             handleSubmit,
+            setFieldValue,
+            
           }) => (
             <form onSubmit={handleSubmit}>
               <TextField
                 label="Username"
                 name="userName"
+                // onChange={handleChange}
+                onChange={(e) => {
+                  setFieldValue("userName", e.target.value);
+                }}
                 value={values.userName}
-                onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.userName && Boolean(errors.userName)}
                 helperText={touched.userName && errors.userName}

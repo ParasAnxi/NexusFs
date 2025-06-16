@@ -1,40 +1,57 @@
 //** IMPORTS */
-import Message from "../models/Message.js";
 import User from "../models/User.js";
+import File from "../models/File.js";
 
-export const saveMessage = async(req, res)=>{
-    try{
-        const {sender, receiver, filename,file,priority} = req.body;
-        console.log(sender,receiver,filename,file)
-        const senderExist = await User.findOne({
-            userName: sender
-        });
-        const receiverExist = await User.findOne({
-            userName: receiver
-        });
-        if(!senderExist || !receiverExist){
-            return res.status(404).json({error: "User not found"})
-        }
-        const data = new Message({
-          participants: [sender, receiver],
-          sender: senderExist.userName,
-          receiver: receiverExist.userName,
-          filename,
-          file,
-          priority,
-        });
-        const sM = await data.save();
-        res.status(200).json({message: sM});
-    }catch(e){
-        res.status(401).json({error:e});
-    }
+//** UPLOAD */
+export const uploadFile = async(req,res)=>{
+  try{
+    const {sender, receiver, unqId, timeAt} = req.body;
+    const file = req.file;
+    console.log(unqId)
+    if(!file) return res.status(400).json({message: "NO file uploaded"});
+    const newFile = new File({
+      participants: [sender, receiver],
+      unqId,
+      sender,
+      receiver,
+      filename: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      data: file.buffer,
+      timeAt
+    });
+    await newFile.save();
+    res.status(200).json({message: "Upload success"});
+  }catch(error){
+    res.status(500).json({error: error})
+  }
 };
+
+//** GET SINGLE FILE */
+export const getFile = async (req, res) => {
+  try {
+    const file = await File.findOne({unqId:req.params.unqId});
+    if (!file) return res.status(404).send('Not found');
+
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Disposition': `inline; filename="${file.filename}"`,
+    });
+    // console.log(file);
+    res.send(file.data);
+    
+  } catch (error) {
+    res.status(500).json({ message: 'Fetch failed' });
+  }
+};
+
+
 //** GET MESSAGED USERS */
 export const messagedPeople = async (req, res) => {
   try {
     const { userName } = req.body;
 
-    const allMessages = await Message.find({
+    const allMessages = await File.find({
       $or: [{ sender: userName }, { receiver: userName }],
     });
 
@@ -78,18 +95,32 @@ export const getParticipantsChats = async (req, res) => {
   if (!senderExist) {
     return res.status(404).json({ error: "User not found!" });
   }
-  const chats = await Message.find({
+  const chats = await File.find({
     participants: { $all: [sender, receiver] },
   }).sort({ updatedAt: -1 });
   const allMessages = chats
     .map((message) => {
       return {
+        id: message._id,
+        unqId: message.unqId,
         sender: message.sender,
         filename: message.filename,
-        priority: message.priority,
         file: message.file,
-        time: message.sentAt,
+        mimeType: message.mimeType,
+        size:message.size,
+        timeAt: message.timeAt,
       };
     }).reverse();
   res.status(200).json({ messages: allMessages });
 };
+
+//** DELETE */
+export const deleteFile = async(req,res)=>{
+  try{
+    const file = await File.findOneAndDelete({ unqId: req.params.unqId });
+    if(!file)return res.staus(400).json({error: "file not found!"});
+    res.status(200).json({ message: "Message deleted successfully" });
+  }catch(e){
+    res.status(400).json({error: e})
+  }
+}

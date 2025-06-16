@@ -1,3 +1,4 @@
+//** IMPORTS */
 import { useState } from "react";
 import {
   Box,
@@ -21,7 +22,7 @@ import {
   Close,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import { setMode,setLogOut } from "../../features/userSlice";
+import { setMode, setLogOut } from "../../features/userSlice";
 import { useNavigate } from "react-router-dom";
 import FlexBetween from "../../components/FlexBetween";
 
@@ -29,19 +30,21 @@ const Navbar = () => {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const dispatch = useDispatch();
   const Navigate = useNavigate();
-  const user = useSelector((state) => state.user.user);
+
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
+  // THEME
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;
   const primaryLight = theme.palette.primary.light;
   const alt = theme.palette.background.alt;
-  // console.log(user);
 
+  //** USER */
+  const user = useSelector((state) => state.user.user);
   const fullName = `${user.userName}`;
-  // const fullName = "paras bhandar";
+
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt}>
       <FlexBetween gap="1.75rem">
@@ -84,9 +87,15 @@ const Navbar = () => {
               <LightMode sx={{ color: dark, fontSize: "25px" }} />
             )}
           </IconButton>
-          <Message onClick={()=>Navigate("/message")} sx={{ fontSize: "25px" ,"&:hover": {
-          cursor: "pointer",
-        }, }} />
+          <Message
+            onClick={() => Navigate("/message")}
+            sx={{
+              fontSize: "25px",
+              "&:hover": {
+                cursor: "pointer",
+              },
+            }}
+          />
           <Notifications sx={{ fontSize: "25px" }} />
           <Help sx={{ fontSize: "25px" }} />
           <FormControl variant="standard" value={fullName}>
@@ -161,7 +170,15 @@ const Navbar = () => {
                 <LightMode sx={{ color: dark, fontSize: "25px" }} />
               )}
             </IconButton>
-            <Message sx={{ fontSize: "25px" }} />
+            <Message
+              onClick={() => Navigate("/message")}
+              sx={{
+                fontSize: "25px",
+                "&:hover": {
+                  cursor: "pointer",
+                },
+              }}
+            />
             <Notifications sx={{ fontSize: "25px" }} />
             <Help sx={{ fontSize: "25px" }} />
             <FormControl variant="standard" value={fullName}>

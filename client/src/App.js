@@ -1,3 +1,4 @@
+//** IMPORTS */
 import React, { useEffect, useState, useRef } from "react";
 import {
   BrowserRouter as Router,
@@ -5,28 +6,24 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { io } from "socket.io-client";
-import axios from "axios";
-import Login from "./scenes/login/Login";
-import Register from "./scenes/register/Register";
 import { useSelector } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { useMemo } from "react";
 import { themeSettings } from "./theme";
-// import { themeSettings } from "./theme2";
+//** COMPS */
+import Login from "./scenes/login/Login";
 import Home from "./scenes/home/Home";
 import Message from "./scenes/message/Message";
+import AllFiles from "./scenes/message/AllFiles";
 
 function App() {
   const mode = useSelector((state)=>state.user.mode);
   const theme = useMemo(()=>
   createTheme(themeSettings(mode)),[mode]);
-  const token = useSelector((state) => state.user.token);
+  // const token = useSelector((state) => state.user.token);
   const auth = Boolean(useSelector((state) => state.user.token));
-  // console.log(token);
   return (
-    // <div style={{ padding: 30 }}>
     <div className="app">
       <Router>
         <ThemeProvider theme={theme}>
@@ -41,7 +38,11 @@ function App() {
               element={auth ? <Home /> : <Navigate to="/" />}
             />
             <Route
-              path="/message/*"
+              path="/allFile/:userName"
+              element={auth ? <AllFiles /> : <Navigate to="/" />}
+            />
+            <Route
+              path="/message"
               element={auth ? <Message /> : <Navigate to="/" />}
             />
           </Routes>

@@ -20,7 +20,7 @@ export const messagedUser = createAsyncThunk(
       body: JSON.stringify({ userName }),
     });
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     return data;
   }
 );
@@ -30,17 +30,25 @@ export const sendUserMessage = createAsyncThunk(
   async (messageData) => {
     const response = await fetch(`${MESSAGE_API}/sendmessage`, {
       method: "POST",
-      // headers: {
-      //   "content-type": "application/json",
-      // },
       body: messageData,
     });
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     return data;
   }
 );
-
+export const getFiles = createAsyncThunk("/message/getFiles",async(data)=>{
+  const response = await fetch(`${MESSAGE_API}/getchats`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  const res = await response.json();
+  // console.log(res);
+  return res;
+})
 //** REDUCERS */
 export const messageSlice = createSlice({
   name: "message",
@@ -58,6 +66,10 @@ export const messageSlice = createSlice({
       .addCase(messagedUser.fulfilled, (state, action) => {
         state.status = "idle";
         state.users = action.payload.users;
+      })
+      .addCase(getFiles.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.chats = action.payload.messages;
       });
   },
 });

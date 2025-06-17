@@ -24,7 +24,7 @@ const userPersistConfig = {
 const messagePersistConfig = {
   key: "message",
   storage: storage,
-  whitelist: ["users"],
+  whitelist: ["users","chats"],
 };
 //** COMBINE REDUCERS */
 const reducers = combineReducers({
